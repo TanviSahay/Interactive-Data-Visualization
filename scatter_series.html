@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Series Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.css"/>
+</head>
+<body>
+
+<div class="container">
+<script type="text/javascript" src="header.js"></script>
+<div id = "wrap">
+<div id="test1"></div>
+<div id="test2"></div>
+</div>
+
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.js"></script>
+<script type="text/javascript">
+var serieschart = dc.seriesChart("#test2");
+var piechart    = dc.pieChart("#test1");
+var ndx, pieDim, pieGroup, seriesDim, seriesGroup;
+d3.csv("dataset_Facebook-table.csv", function(error, experiments) {
+  ndx = crossfilter(experiments);
+  seriesDim   = ndx.dimension(function(d) {return [d['Type'], +d['Post Month']]; });
+  seriesGroup = seriesDim.group().reduceSum(function(d) { return +d.comment; });
+  pieDim      = ndx.dimension(function(d) {return "Type-"+d.Type});
+  pieGroup    = pieDim.group().reduceSum(function(d) {return +d.comment});
+
+  var symbolScale = d3.scale.ordinal().range(d3.svg.symbolTypes);
+  var symbolAccessor = function(d) { return symbolScale(d.key[1]); };
+  var subChart = function(c) {
+    return dc.scatterPlot(c)
+        .symbol('circle')
+        .symbolSize(8)
+        .highlightedSize(10)
+  };
+
+  piechart
+    .width(600)
+    .height(300)
+    .slicesCap(4)
+    .innerRadius(50)
+    .dimension(pieDim)
+    .group(pieGroup)
+    .legend(dc.legend())
+    // workaround for #703: not enough data is accessible through .label() to display percentages
+    .on('pretransition', function(chart) {
+        chart.selectAll('text.pie-slice').text(function(d) {
+            return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%';
+        })
+    });
+
+  serieschart
+    .width(500)
+    .height(400)
+    .chart(subChart)
+    .x(d3.scale.linear().domain([0,12]))
+    .y(d3.scale.linear().domain([d3.extent(experiments, function(d){return +d.comment;})]))
+    .brushOn(false)
+    .yAxisLabel("Total Comments")
+    .xAxisLabel("Post Month")
+    .clipPadding(10)
+    .elasticY(true)
+    .dimension(seriesDim)
+    .group(seriesGroup)
+    .mouseZoomable(true)
+    .colors()
+    .shareTitle(false) // allow default scatter title to work
+    .seriesAccessor(function(d) {return "Type: " + d.key[0];})
+    .keyAccessor(function(d) {return +d.key[1];})
+    .valueAccessor(function(d) {return +d.value;})
+    .legend(dc.legend().x(100).y(50).itemHeight(12).gap(10).horizontal(20).legendWidth(40).itemWidth(170));
+  serieschart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
+  serieschart.margins().left += 40;
+  dc.renderAll();
+});
+</script>
+</div>
+</body>
+</html>

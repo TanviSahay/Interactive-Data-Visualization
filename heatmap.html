@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Heatmap Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.css"/>
+    <style>
+      .heat-box {
+        stroke: #E6E6E6;
+        stroke-width: 2px;
+      }
+    </style>
+</head>
+<body>
+<div class="container">
+<script type="text/javascript" src="header.js"></script>
+
+<h2>Michelson–Morley experiment</h2>
+
+<div id="heat" style={"margin-left:100px;"}></div>
+<div id="histogram"></div>
+<div id="line"></div>
+<div id="scatter"></div>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div id = "wrapper" float:left>
+  <div id="select-operation-2"> Select axis for heatmap </br>
+    <label><input type=radio name="operation-2" value="Type" checked="true">&nbsp;Type of post</label></br>
+    <label><input type=radio name="operation-2" value="Category">&nbsp;Category of post</label></br>
+    <label><input type=radio name="operation-2" value="Paid">&nbsp;Payment Status</label></br>
+  </div>
+
+  <div id="select-operation"> Select the value to be displayed </br>
+    <label><input type=radio name="operation" value="comment" checked="true">&nbsp;Comments</label></br>
+    <label><input type=radio name="operation" value="like">&nbsp;Likes</label></br>
+    <label><input type=radio name="operation" value="share">&nbsp;Shares</label></br>
+    <label><input type=radio name="operation" value="Total Interactions">&nbsp;Total Interactions</label>
+  </div>
+</div>
+
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.js"></script>
+<script type="text/javascript">
+
+var heatchart = dc.heatMap("#heat");
+var linechart = dc.seriesChart("#line");
+var histchart = dc.barChart("#histogram");
+var scatter   = dc.seriesChart("#scatter");
+d3.csv("heatmap_type_3.csv", function(error, experiments) {
+  var ndx       = crossfilter(experiments),
+      runDim    = ndx.dimension(function(d) { return [d['Type'], d['features']]; }),
+      runGroup  = runDim.group().reduceSum(function(d) { return +d['Feature Value']; });
+  var lineDim   = ndx.dimension(function(d) {return [d['Type'], +d['Post Weekday']]; }),
+      lineGroup = lineDim.group().reduceSum(function(d) {return +d['comment'] / 8});
+  var histDim   = ndx.dimension(function(d) {return +d['Post Month']}),
+      histGroup = histDim.group().reduceCount(function(d) {return +d['Post Month'] / 8});
+
+function remove_empty_bins(source_group) {
+    return {
+        all:function () {
+            return source_group.all().filter(function(d) {
+                return d.value != 0;
+            });
+        }
+    };
+}
+  var nonEmptyHist = remove_empty_bins(histGroup);
+  
+  extent_value = d3.extent(experiments, function(d){ return +d['Feature Value'];})
+
+  var heatColorMapping = d3.scale.linear().domain(extent_value)
+            .range(["skyblue","red"]);
+
+  var scatDim   = ndx.dimension(function(d) {return [d['Type'],+d['Post Weekday']]; }),
+      scatGroup = scatDim.group().reduceSum(function(d) {return +d['Page Total Likes'] / 8});
+
+function drawheat(runDim, runGroup){  
+  heatchart
+    .width(45 * 11 + 80)
+    .height(45 * 5 + 40)
+    .margins({top: 30, right: 100, bottom: 25, left: 320})
+    .dimension(runDim)
+    .group(runGroup)
+    .keyAccessor(function(d) { return d.key[0]; })
+    .valueAccessor(function(d) { return d.key[1]; })
+    .colorAccessor(function(d) { return +d.value; })
+    .title(function(d) {
+        return "Run:   " + d.key[0] + "\n" +
+               "Expt:  " + d.key[1] + "\n" +
+               "Speed: " + (+d.value);})
+    .colors(heatColorMapping);
+return heatchart;
+}
+
+function drawline(lineDim, lineGroup, yLabel, seriesAcc){
+  linechart
+    .width(500)
+    .height(300)
+    .chart(function(c) { return dc.lineChart(c).interpolate('basis'); })
+    .x(d3.scale.linear().domain([0,8]))
+    .brushOn(false)
+    .yAxisLabel(yLabel,20)
+    .xAxisLabel("Post Weekday")
+    .clipPadding(10)
+    .elasticY(true)
+    .dimension(lineDim)
+    .group(lineGroup)
+    .colors(d3.scale.category10())
+    .mouseZoomable(true)
+    .seriesAccessor(function(d) {return seriesAcc + ":" + d.key[0];})
+    .keyAccessor(function(d) {return +d.key[1];})
+    .valueAccessor(function(d) {return +d.value;})
+    .legend(dc.legend().x(70).y(30).itemHeight(13).gap(5).horizontal(10).legendWidth(200).itemWidth(90));
+  //linechart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
+    linechart.margins().left = 60;
+  
+  return linechart;
+  }
+
+function drawhist(histDim, nonEmptyHist){
+  histchart
+    .width(500)
+    .height(300)
+    .x(d3.scale.ordinal())
+    .xUnits(dc.units.ordinal)
+    .brushOn(false)
+    .yAxisLabel("Total Posts per month")
+    .xAxisLabel("Post Month")
+    .dimension(histDim)
+    .group(nonEmptyHist)
+    .elasticY('true')
+    .elasticX('true')
+    .controlsUseVisibility(true);
+
+return histchart;
+}
+
+  drawline(lineDim, lineGroup,"Total Comments","Type");
+  drawheat(runDim, runGroup);
+  drawhist(histDim, histGroup);
+
+  d3.selectAll('#select-operation input')
+       .on('click', function() {
+           ndx     = crossfilter(experiments);
+           value_1 = document.querySelector('input[name="operation"]:checked').value;
+           value_2 = document.querySelector('input[name="operation-2"]:checked').value;
+           runDim    = ndx.dimension(function(d) { return [d[value_2], d['features']]; });
+           runGroup  = runDim.group().reduceSum(function(d) { return +d['Feature Value']; });
+           lineDim   = ndx.dimension(function(d) {return [d[value_2], +d['Post Weekday']]; });
+           lineGroup = lineDim.group().reduceSum(function(d) {return +d[value_1] / 8});
+           histDim   = ndx.dimension(function(d) {return +d['Post Month']});
+           histGroup = histDim.group().reduceCount(function(d) {return +d['Post Month'] / 8});
+           nonEmptyHist = remove_empty_bins(histGroup);
+           drawline(lineDim,lineGroup,'Total ' + value_1 + 's',value_2);
+           drawheat(runDim, runGroup);
+           drawhist(histDim, nonEmptyHist);
+           dc.redrawAll();
+       }); 
+ 
+    d3.selectAll('#select-operation-2 input')
+       .on('click', function() {
+           ndx     = crossfilter(experiments);
+           value_1 = document.querySelector('input[name="operation"]:checked').value;
+           value_2 = document.querySelector('input[name="operation-2"]:checked').value;
+           console.log(value_1, value_2);
+           runDim    = ndx.dimension(function(d) {return [d[value_2], d['features']]; });
+           runGroup  = runDim.group().reduceSum(function(d) { return +d['Feature Value']; });
+           lineDim   = ndx.dimension(function(d) {return [d[value_2], +d['Post Weekday']]; });
+           lineGroup = lineDim.group().reduceSum(function(d) {return +d[value_1] / 8});
+           histDim   = ndx.dimension(function(d) {return +d['Post Month']});
+           histGroup = histDim.group().reduceCount(function(d) {return +d['Post Month'] / 8});
+           nonEmptyHist = remove_empty_bins(histGroup);
+           drawline(lineDim,lineGroup,'Total ' + value_1 + 's',value_2);
+           drawheat(runDim, runGroup);
+           drawhist(histDim, nonEmptyHist);
+           dc.redrawAll();
+       }); 
+
+  dc.renderAll();
+
+
+});
+</script>
+
+</div>
+</body>
+</html>
