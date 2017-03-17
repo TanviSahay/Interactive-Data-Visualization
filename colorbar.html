@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Color bar</title>
+    <link type="text/css" rel="stylesheet" href="colorbar.css"></link>
+    <script type="text/javascript" src="http://d3js.org/d3.v2.min.js"></script>
+    <script type="text/javascript" src="colorbar.js"></script>
+  </head>
+  <body>    
+    <script type="text/javascript">
+
+var svg = d3.select("body").append("svg")
+    .attr("width", 300)
+    .attr("height", 300),
+g = svg.append("g").attr("transform","translate(100,0)").classed("colorbar",true),
+cb = colorBar().color(d3.scale.linear().domain([8370,13994]).range(["blue","red"])).size(200).lineWidth(30).precision(4);
+
+g.call(cb);
+
+    </script>
+  </body>
+</html>

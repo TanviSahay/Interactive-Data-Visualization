@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Heatmap Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.css"/>
+
+</head>
+<body>
+<div class="container">
+<script type="text/javascript" src="header.js"></script>
+
+Select data for X Axis: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<select id='selectx'>
+   <option value="fixed acidity">fixed acidity</option>
+   <option value="volatile acidity">volatile acidity</option>
+   <option value="citric acid">citric acid</option>
+   <option value="residual sugar">residual sugar</option>
+   <option value="chlorides">chlorides</option>
+   <option value="free sulfur dioxide">free sulfur dioxide</option>
+   <option value="total sulfur dioxide">total sulfur dioxide</option>
+   <option value="density">density</option>
+   <option value="pH">pH</option>
+   <option value="sulphates">sulphates</option>
+   <option value="alcohol">alcohol</option>
+   <option value="quality" selected>quality</option>
+</select>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Select data for Y Axis: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<select id='selecty'>
+   <option value="fixed acidity">fixed acidity</option>
+   <option value="volatile acidity">volatile acidity</option>
+   <option value="citric acid">citric acid</option>
+   <option value="residual sugar">residual sugar</option>
+   <option value="chlorides">chlorides</option>
+   <option value="free sulfur dioxide">free sulfur dioxide</option>
+   <option value="total sulfur dioxide">total sulfur dioxide</option>
+   <option value="density">density</option>
+   <option value="pH">pH</option>
+   <option value="sulphates">sulphates</option>
+   <option value="alcohol" selected>alcohol</option>
+   <option value="quality">quality</option>
+</select>
+<br></br>
+<div id="scatwine"></div>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.js"></script>
+<script type="text/javascript">
+
+
+var scatwine = dc.seriesChart('#scatwine');
+
+d3.csv('wine_all.csv', function (errors, experiments){
+
+var ndx       = crossfilter(experiments),
+    scatDim   = ndx.dimension(function(d) {return [d.Type, +d['quality']]}),
+    scatGroup = scatDim.group().reduceSum(function(d) {return +d['alcohol']});
+var subChart = function(c) {
+    return dc.scatterPlot(c)
+        .symbol('circle')
+        .symbolSize(8)
+        .highlightedSize(11)
+  };
+
+function drawscat(scatDim, scatGroup, yLabel, xLabel, xmin, xmax){
+ 
+ scatwine
+    .width(540)
+    .height(330)
+    .chart(subChart)
+    .x(d3.scale.linear().domain([xmin, xmax]))
+    .brushOn(false)
+    .yAxisLabel('Total ' + yLabel + ' content')
+    .xAxisLabel(xLabel)
+    .clipPadding(10)
+    .elasticY(true)
+    .dimension(scatDim)
+    .group(scatGroup)
+    .colors(d3.scale.category10())
+    .mouseZoomable(false)
+    .seriesAccessor(function(d) {return "Type: " + d.key[0];})
+    .keyAccessor(function(d) {return +d.key[1];})
+    .valueAccessor(function(d) {return +d.value;})
+    .legend(dc.legend().x(350).y(10).itemHeight(13).gap(5).horizontal(10).legendWidth(200).itemWidth(90));
+  scatwine.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
+  scatwine.margins().left = 70;	
+
+}
+
+drawscat(scatDim, scatGroup, 'alcohol', 'quality', 3, 8)
+scatwine.render();
+
+
+var selectionx = document.getElementById("selectx"),
+    selectiony = document.getElementById("selecty");
+
+selectionx.onchange = function(){
+    xvalue = selectionx.options[selectionx.selectedIndex].value;
+    yvalue = selectiony.options[selectiony.selectedIndex].value;  
+    
+    var ndx       = crossfilter(experiments),
+        scatDim   = ndx.dimension(function(d) {return [d.Type, +d[xvalue]]}),
+        scatGroup = scatDim.group().reduceSum(function(d) {return +d[yvalue]});
+    var subChart = function(c) {
+    return dc.scatterPlot(c)
+        .symbol('circle')
+        .symbolSize(8)
+        .highlightedSize(11)
+      };
+    xmin = d3.min(experiments, function(d){return +d[xvalue]});
+    xmax = d3.max(experiments, function(d){return +d[xvalue]});
+
+    drawscat(scatDim, scatGroup, yvalue, xvalue, xmin, xmax);
+    dc.redrawAll();
+
+};
+
+selectiony.onchange = function(){
+    xvalue = selectionx.options[selectionx.selectedIndex].value;
+    yvalue = selectiony.options[selectiony.selectedIndex].value;  
+    
+    var ndx       = crossfilter(experiments),
+        scatDim   = ndx.dimension(function(d) {return [d.Type, +d[xvalue]]}),
+        scatGroup = scatDim.group().reduceSum(function(d) {return +d[yvalue]});
+    var subChart = function(c) {
+    return dc.scatterPlot(c)
+        .symbol('circle')
+        .symbolSize(8)
+        .highlightedSize(11)
+      };
+    xmin = d3.min(experiments, function(d){return +d[xvalue]});
+    xmax = d3.max(experiments, function(d){return +d[xvalue]});
+
+    drawscat(scatDim, scatGroup, yvalue, xvalue, xmin, xmax);
+    dc.redrawAll();
+
+};
+dc.renderAll();
+
+});
+
+</script>
+</div>
+</body>
+</html>
