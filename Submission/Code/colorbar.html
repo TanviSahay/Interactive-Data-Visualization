@@ -13,7 +13,7 @@ var svg = d3.select("body").append("svg")
     .attr("width", 300)
     .attr("height", 300),
 g = svg.append("g").attr("transform","translate(100,0)").classed("colorbar",true),
-cb = colorBar().color(d3.scale.linear().domain([8370,13994]).range(["blue","red"])).size(200).lineWidth(30).precision(4);
+cb = colorBar().color(d3.scale.ordinal().domain(['Low','High']).range(["blue","red"])).size(200).lineWidth(30).precision(4);
 
 g.call(cb);
 

@@ -40,7 +40,7 @@ function colorBar(){
 
             bEnter.call(bTransform,function(d){return oldQuads[oldQuads.length - 1]},oldLineWidth); // enter from last of oldQuad
             bExit.call(bTransform,function(d){return quads[quads.length - 1]},lineWidth); //exit from last of quads
-            bUpdate.call(bTransform,function(d){return quads[d]},lineWidth)
+            bUpdate.call(bTransform,function(d){return quads[d]},lineWidth);
 
             var colorBarAxis = d3.svg.axis().scale(aScale).orient(orient)
                 .tickSize(tickSize).tickFormat(tickFormat).ticks(5),

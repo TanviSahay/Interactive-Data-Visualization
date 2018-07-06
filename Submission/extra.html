@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Right Axis Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.css"/>
+</head>
+<body>
+
+<div class="container">
+<script type="text/javascript" src="header.js"></script>
+
+<div id="monthly-move-chart"></div>
+
+<script type="text/javascript" src="http://d3js.org/queue.v1.min.js"></script>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.js"></script>
+<script type="text/javascript">
+    var moveChart = dc.compositeChart("#monthly-move-chart");
+    d3.csv("./Cleaned Data/dataset_Facebook-table.csv", function (error, data) {
+        
+        var ndx = crossfilter(data);
+        // monthly index avg fluctuation in percentage
+        var moveMonths = ndx.dimension(function (d) {
+            return d['Post Month'];
+        });
+        var Group1 = moveMonths.group().reduceSum(function (d) {
+            return d['Lifetime Post Total Reach'];
+        });
+        var Group2 = moveMonths.group().reduceSum(function(d) {return d['Lifetime Post Total Impressions'];});
+
+        moveChart.width(600)
+                .height(300)
+                .transitionDuration(1000)
+                .margins({top: 30, right: 50, bottom: 25, left: 60})
+                .dimension(moveMonths)
+                .mouseZoomable(true)
+                .shareTitle(false)
+                .group(Group1)
+                .x(d3.scale.ordinal().range([1,12]))
+                .xUnits(dc.units.ordinal)
+                .xAxisLabel('Post Month')
+                .elasticY(false)
+                .renderHorizontalGridLines(true)
+                .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+                .brushOn(false)
+                .compose([
+                    dc.lineChart(moveChart)
+                            .group(Group1, "Lifetime Post Total Reach")
+                            .valueAccessor(function (d) {
+                                return d.value;
+                            }),
+                    dc.lineChart(moveChart)
+                            .group(Group2, "Lifetime Post Total Impressions")
+                            .valueAccessor(function (d) {
+                                return d.value;
+                            })
+                            .ordinalColors(["orange"])
+                            .useRightYAxis(true)
+                ])
+                .yAxisLabel("Lifetime Post Total Reach")
+                .rightYAxisLabel("Lifetime Post Total Impressions")
+                .renderHorizontalGridLines(true);
+        moveChart.margins().right = 80
+        moveChart.margins().bottom = 50
+        dc.renderAll();
+    });
+</script>
+</div>
+</body>
+</html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>dc.js - Heatmap Example</title>
+    <title>Homework 2-3</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/dc/2.1.3/dc.css"/>
@@ -19,16 +19,11 @@
 <script type="text/javascript" src="header.js"></script>
 
 <h2>Visualizations for Facebook Dataset</h2>
+
+<h5> Select options to customize visualizations </h5>
 <div id="wrapper">
 
-  <div id="select-operation"> Select the value to be displayed: 
-    <label><input type=radio name="operation" value="comment" checked="true">&nbsp;Comments</label>
-    <label><input type=radio name="operation" value="like">&nbsp;Likes</label>
-    <label><input type=radio name="operation" value="share">&nbsp;Shares</label>
-    <label><input type=radio name="operation" value="Total Interactions">&nbsp;Total Interactions</label>
-    <label><input type=radio name="operation" value="Page Total Likes">&nbsp;Page Total Likes</label>
-  </div>
-  <div id="select-operation-2"> <br>Select axis for heatmap:
+  <div id="select-operation-2"> <br>Select x-axis for heatmap:
     <label><input type=radio name="operation-2" value="Type" checked="true">&nbsp;Type of post</label>
     <label><input type=radio name="operation-2" value="Category">&nbsp;Category of post</label>
     <label><input type=radio name="operation-2" value="Paid">&nbsp;Payment Status</label>
@@ -40,13 +35,20 @@
     <label><input type=radio name="operation-3" value="Category">&nbsp;Category</label>
     <label><input type=radio name="operation-3" value="Type">&nbsp;Type</label>
   </div>
+  <div id="select-operation"> Select y-axis for line chart and scatter plot: 
+    <label><input type=radio name="operation" value="comment" checked="true">&nbsp;Comments</label>
+    <label><input type=radio name="operation" value="like">&nbsp;Likes</label>
+    <label><input type=radio name="operation" value="share">&nbsp;Shares</label>
+    <label><input type=radio name="operation" value="Total Interactions">&nbsp;Total Interactions</label>
+    <label><input type=radio name="operation" value="Page Total Likes">&nbsp;Page Total Likes</label>
+  </div>
 </div>
 
-<div id="heat" style={"margin-left:100px;"}></div>
-<div id="histogram" style={"margin-left:100px;"}></div>
+<div id="heat" style={"margin-left:100px;"}><div><h5>Heatmap</h5></div></div>
+<div id="histogram" style={"margin-left:100px;"}><div><h5>Histogram</h5></div></div>
 <div id="colorbar"></div>
-<div id="line"></div>
-<div id="scatter"></div></br>
+<div id="line"><div><h5>Line Chart</h5></div></div>
+<div id="scatter"><div><h5>Scatter Plot</h5></div></div></br>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </br></br>
@@ -59,6 +61,8 @@
 <p> 3. Scatter plot: The default scatter plot shows distribution of total comments on each type of post for each weekday. As can be noticed, photos have much higher number of comments than all other posts, regardless of the day of the week. This, combined with information from the heatmap leads us to conclude that of all types of posts considered in this study, photos are the most popular. Also, for all four types of posts, maximum comments are in the middle of the week i.e. wednesday and thursday. This leads one to conclude the people are more likely to use social media when they are settles in their routines as opposed to when their routine is either just beginning or about to end. This can be beneficial to page owners as they can plan to concentrate the more important or prominent posts to the middle of the week, when people are more active on facebook and thus reach a wider audience more quickly.
 
 <p>4. Line Chart: The default line chart shows total comments distributed over the hours of a day, for each type of post. The high values for photos are consistent with the previous conclusion. One new phenomenon of interest in this plot is that for all types of posts, higher comments seem to be concentrated towards the starting and the middle of the day, with minimal activity between the two times or towards the end of the day. </p>  
+
+</br>
 <h2>Visualizations for Wine Dataset</h2>
 <div id="wine-pie"></div>
 <div id="wine-hist"></div>
@@ -97,7 +101,30 @@ Select data for Y Axis: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 </select>
 <br></br>
 <div id="scatwine"></div>
+<p></p>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
+<br></br>
 
+<h2>Additional Visualizations for Facebook Dataset</h2>
+
+<div id="wrapper">
+<button type=button, id="vis1">Visualization 1</button>&nbsp; Lifetime Post Reach vs Lifetime Post Impressions per Month</br>
+<button type=button, id="vis2">Visualization 2</button>&nbsp; Total People to like a post per weekday per post</br>
+<button type=button, id="vis3">Visualization 3</button>&nbsp; Number of posts in each type</br>
+<br></br> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<div id="composite-add"></div>
+<div id="scat"></div>
+</div>
 
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crossfilter/1.3.12/crossfilter.js"></script>
@@ -117,7 +144,8 @@ cb = colorBar().color(d3.scale.linear().domain([4000,12500000]).range(["skyblue"
 
 g.call(cb);
 
-d3.csv("heatmap_type_3.csv", function(error, experiments) {
+d3.csv("../Cleaned Data/heatmap_type_3.csv", function(error, experiments) {
+  console.log(experiments['Type'])
   var ndx       = crossfilter(experiments),
       runDim    = ndx.dimension(function(d) { return [d['Type'], d['features']]; }),
       runGroup  = runDim.group().reduceSum(function(d) { return +d['Feature Value']; });
@@ -177,14 +205,17 @@ function drawhist(histDim, nonEmptyHist, label){
     .height(280)
     .x(d3.scale.ordinal())
     .xUnits(dc.units.ordinal)
-    .brushOn(false)
+    .brushOn(true)
     .yAxisLabel("Total Posts per " + label)
     .xAxisLabel(label)
     .dimension(histDim)
     .group(nonEmptyHist)
     .elasticY('true')
     .elasticX('true')
-    .controlsUseVisibility(true);
+    .controlsUseVisibility(true)
+    .title(function(d) {
+        return label + ":   " + d.key + "\n" +
+               "Value: " + (+d.value);});
   histchart.margins().left = 60;
 return histchart;
 };
@@ -209,6 +240,10 @@ function drawline(lineDim, lineGroup, yLabel, seriesAcc){
     .seriesAccessor(function(d) {return seriesAcc + ": " + d.key[0];})
     .keyAccessor(function(d) {return +d.key[1];})
     .valueAccessor(function(d) {return +d.value;})
+    .title(function(d) {
+        return seriesAcc + ":   " + d.key[0] + "\n" +
+               "Post Hour:  " + d.key[1] + "\n" +
+               yLabel + ": " + (+d.value);})
     .legend(dc.legend().x(350).y(10).itemHeight(13).gap(5).horizontal(10).legendWidth(200).itemWidth(90));
   //linechart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
     linechart.margins().left = 75;
@@ -235,6 +270,10 @@ function drawscat(scatDim, scatGroup, yLabel, seriesAcc){
     .seriesAccessor(function(d) {return seriesAcc + ": " + d.key[0];})
     .keyAccessor(function(d) {return +d.key[1];})
     .valueAccessor(function(d) {return +d.value;})
+    .title(function(d) {
+        return seriesAcc + ":   " + d.key[0] + "\n" +
+               "Post Weekday:  " + d.key[1] + "\n" +
+               yLabel + ": " + (+d.value);})
     .legend(dc.legend().x(350).y(10).itemHeight(13).gap(5).horizontal(10).legendWidth(200).itemWidth(90));
   scatchart.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
   scatchart.margins().left = 70;	
@@ -327,7 +366,7 @@ var histwine = dc.barChart("#wine-hist");
 var piewine  = dc.pieChart("#wine-pie");
 var scatwine = dc.seriesChart('#scatwine');
  
-d3.csv("wine_all.csv", function(error, experiments) {
+d3.csv("../Cleaned Data/wine_all.csv", function(error, experiments) {
     var ndx       = crossfilter(experiments),
         histDim   = ndx.dimension(function(d) {return +d['quality'];}),
         histGroup = histDim.group().reduceCount(function (d) {return +d['quality']}),
@@ -350,7 +389,8 @@ function remove_empty_bins(source_group) {
         }
     };
 }
-  var nonEmptyHist = remove_empty_bins(histGroup);
+
+var nonEmptyHist = remove_empty_bins(histGroup);
 
 function drawhist(histDim, nonEmptyHist){
     histwine
@@ -367,6 +407,9 @@ function drawhist(histDim, nonEmptyHist){
               .elasticY(true)
               .yAxisLabel('Number of wines per quality')
               .xAxisLabel('quality')
+              .title(function(d) {
+                       return "quality:   " + d.key + "\n" +
+                          "Number of wines per quality:  " + d.value;})
               .controlsUseVisibility(true);
 	
 };
@@ -406,6 +449,10 @@ function drawscat(scatDim, scatGroup, yLabel, xLabel, xmin, xmax){
     .seriesAccessor(function(d) {return "Type: " + d.key[0];})
     .keyAccessor(function(d) {return +d.key[1];})
     .valueAccessor(function(d) {return +d.value;})
+    .title(function(d) {
+        return "Type:   " + d.key[0] + "\n" +
+               xLabel + ":  " + d.key[1] + "\n" +
+               yLabel + " content: " + (+d.value);})
     .legend(dc.legend().x(350).y(10).itemHeight(13).gap(5).horizontal(10).legendWidth(200).itemWidth(90));
   scatwine.yAxis().tickFormat(function(d) {return d3.format(',d')(d);});
   scatwine.margins().left = 70;	
@@ -500,6 +547,137 @@ function remove_empty_bins(source_group) {
 dc.renderAll;
 
 });
+
+var click1 = document.getElementById("vis1");
+var click2 = document.getElementById("vis2");
+var click3 = document.getElementById("vis3");
+
+var moveChart = dc.compositeChart("#composite-add");
+    d3.csv("../Cleaned Data/dataset_Facebook-table.csv", function (error, data) {
+        
+        var ndx = crossfilter(data);
+        // monthly index avg fluctuation in percentage
+        var moveMonths = ndx.dimension(function (d) {
+            return d['Post Month'];
+        });
+        var Group1 = moveMonths.group().reduceSum(function (d) {
+            return d['Lifetime Post Total Reach'];
+        });
+        var Group2 = moveMonths.group().reduceSum(function(d) {return d['Lifetime Post Total Impressions'];});
+        moveChart.width(600)
+                .height(300)
+                .transitionDuration(1000)
+                .margins({top: 30, right: 50, bottom: 25, left: 60})
+                .dimension(moveMonths)
+                .mouseZoomable(false)
+                .shareTitle(false)
+                .group(Group1)
+                .x(d3.scale.ordinal())
+                .xUnits(dc.units.ordinal)
+                .xAxisLabel('Post Month')
+                .elasticY(false)
+                .renderHorizontalGridLines(true)
+                .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+                .brushOn(false)
+                .compose([
+                    dc.lineChart(moveChart)
+                            .group(Group1, "Lifetime Post Total Reach")
+                            .title(function(d) {
+                   return "Post Month:   " + d.key + "\n" +
+                          "Feature:   Lifetime Post Total Reach \n" +
+                          "Value:    " + d.value;})
+                            .valueAccessor(function (d) {
+                                return d.value;
+                            }),
+                    dc.lineChart(moveChart)
+                            .group(Group2, "Lifetime Post Total Impressions")
+                            .title(function(d) {
+                   return "Post Month:   " + d.key + "\n" +
+                          "Feature:   Lifetime Post Total Impressions \n" +
+                          "Value:    " + d.value;})
+                            .valueAccessor(function (d) {
+                                return d.value;
+                            })
+                            .ordinalColors(["orange"])
+                            .useRightYAxis(true)
+                ])
+                .yAxisLabel("Lifetime Post Total Reach")
+                .rightYAxisLabel("Lifetime Post Total Impressions")
+                .renderHorizontalGridLines(true);
+        moveChart.margins().right = 80
+        moveChart.margins().bottom = 50
+});
+
+
+var scatChart = dc.scatterPlot("#composite-add");
+d3.csv("../Cleaned Data/dataset_Facebook-table.csv", function(error, experiments) {
+  
+  var ndx                 = crossfilter(experiments),
+      runDimension        = ndx.dimension(function(d) {return [+d['Post Weekday'],+d['Page total likes']]; }),
+      speedSumGroup       = runDimension.group();
+  scatChart
+    .width(768)
+    .height(480)
+    .x(d3.scale.linear().domain([0,8]))
+    .brushOn(false)
+    .symbolSize(8)
+    .clipPadding(10)
+    .yAxisLabel("Page Total Likes")
+    .xAxisLabel("Post Weekday")
+    .dimension(runDimension)
+    .title(function(d) {
+                   return "Post Weekday:   " + d.key[0] + "\n" +
+                          "People to like the post:    " + d.key[1];})
+    .group(speedSumGroup);
+  scatChart.margins().left = 80;
+
+});
+
+var pieChart = dc.pieChart("#composite-add");
+d3.csv("../Cleaned Data/dataset_Facebook-table.csv", function(error, experiments) {
+
+var   ndx                 = crossfilter(experiments),
+      pieDimension        = ndx.dimension(function(d) {return 'Type-' +d.Type; }),
+      pieSumGroup         = pieDimension.group().reduceCount(function(d) {return +d.Type});
+
+    pieChart
+          .width(550)
+          .height(380)
+          .cy([200])
+          .slicesCap(4)
+          .radius(180)
+          .innerRadius(60)
+          .externalLabels(40)
+          .externalRadiusPadding(60)
+          .drawPaths(true)
+          .dimension(pieDimension)
+          .group(pieSumGroup)
+          .colors(d3.scale.category10())
+          .legend(dc.legend().x(50).y(50));
+
+});
+
+scatChart.resetSvg();
+moveChart.resetSvg();
+pieChart.resetSvg();
+click1.onclick = function (){
+  pieChart.resetSvg();
+  scatChart.resetSvg();
+  moveChart.render();
+ 
+};
+
+click2.onclick = function(){
+pieChart.resetSvg();
+moveChart.resetSvg();
+scatChart.render();
+};
+
+click3.onclick = function(){
+moveChart.resetSvg();
+scatChart.resetSvg();
+pieChart.render();
+}
 </script>
 
 </div>
